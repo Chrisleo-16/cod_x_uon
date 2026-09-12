@@ -4,8 +4,11 @@ import Image from "next/image";
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import { AttentionModal } from "./AttentionModal";
 import { CodLoader } from "./CodLoader";
+import { OperatorCarousel } from "./OperatorCarousel";
+import { MissionComplete } from "./MissionComplete";
 import type { PlayerInput, SlotsStatus, TeamRegistrationPayload } from "@/lib/types";
 import { TOURNAMENT } from "@/lib/constants";
+import { OPERATORS } from "@/lib/characters";
 
 const emptyPlayer = (): PlayerInput => ({
   fullName: "",
@@ -101,8 +104,15 @@ export function RegistrationForm() {
   const [attention, setAttention] = useState<{ open: boolean; message: string }>(
     { open: false, message: "" },
   );
-  const [success, setSuccess] = useState<string | null>(null);
+  const [success, setSuccess] = useState<{
+    teamName: string;
+    leadName: string;
+    teamNumber: number;
+    pool: number;
+    operatorId: string;
+  } | null>(null);
   const [teamName, setTeamName] = useState("");
+  const [operatorId, setOperatorId] = useState(OPERATORS[0].id);
   const [captain, setCaptain] = useState<PlayerInput>(emptyPlayer);
   const [teammates, setTeammates] = useState({
     B: emptyPlayer(),
@@ -180,9 +190,13 @@ export function RegistrationForm() {
       }
       if (!res.ok) throw new Error(data.error || "Registration failed");
 
-      setSuccess(
-        `Squad locked in — ${data.teamName || teamName} · Team #${data.teamNumber} · Pool ${data.pool}. See you at Chiromo.`,
-      );
+      setSuccess({
+        teamName: data.teamName || teamName,
+        leadName: captain.fullName.trim(),
+        teamNumber: data.teamNumber,
+        pool: data.pool,
+        operatorId,
+      });
       setTeamName("");
       setCaptain(emptyPlayer());
       setTeammates({
@@ -191,6 +205,7 @@ export function RegistrationForm() {
         D: emptyPlayer(),
         E: emptyPlayer(),
       });
+      setOperatorId(OPERATORS[0].id);
       const refresh = await fetch("/api/slots");
       setStatus(await refresh.json());
     } catch (err) {
@@ -204,6 +219,20 @@ export function RegistrationForm() {
   }
 
   if (booting) return <CodLoader label="SYNCING LOADOUT..." />;
+
+  if (success) {
+    return (
+      <MissionComplete
+        teamName={success.teamName}
+        leadName={success.leadName}
+        teamNumber={success.teamNumber}
+        pool={success.pool}
+        operatorId={success.operatorId}
+        captionCorner="bottom-left"
+        onDone={() => setSuccess(null)}
+      />
+    );
+  }
 
   return (
     <>
@@ -241,100 +270,87 @@ export function RegistrationForm() {
 
           <div className="mx-6 mt-5 h-px" style={{ backgroundColor: "#2f6fed" }} />
 
-          {success ? (
-            <div className="px-6 py-10 text-center">
-              <p className="text-xl" style={{ fontFamily: "var(--font-display)", color: "#ffcf00" }}>
-                Deployment Confirmed
-              </p>
-              <p className="mt-3 text-sm text-white/80">{success}</p>
-              <button
-                type="button"
-                className="mt-6 w-full rounded-md py-3 text-sm font-semibold text-white"
-                style={{ backgroundColor: "#3a3a3a" }}
-                onClick={() => setSuccess(null)}
-              >
-                Register Another Squad
-              </button>
+          <form onSubmit={onSubmit} className="px-6 py-5">
+            <label className="mb-4 block">
+              <span className="mb-1.5 block text-xs font-medium tracking-wide text-white/90">
+                Team Name
+              </span>
+              <input
+                style={inputStyle}
+                value={teamName}
+                onChange={(e) => setTeamName(e.target.value)}
+                placeholder="e.g. Chiromo Ghosts"
+                required
+                maxLength={60}
+              />
+            </label>
+
+            <div className="mb-4 flex flex-wrap gap-1.5">
+              {(["A", "B", "C", "D", "E"] as const).map((slot) => (
+                <button
+                  key={slot}
+                  type="button"
+                  onClick={() => setOpenSlot(slot)}
+                  className="min-w-12 rounded px-3 py-1.5 text-xs font-bold tracking-wider"
+                  style={
+                    openSlot === slot
+                      ? { backgroundColor: "#ffcf00", color: "#000" }
+                      : { backgroundColor: "#2a2a2a", color: "rgba(255,255,255,0.7)" }
+                  }
+                >
+                  {slot === "A" ? "A · YOU" : slot}
+                </button>
+              ))}
             </div>
-          ) : (
-            <form onSubmit={onSubmit} className="px-6 py-5">
-              <label className="mb-4 block">
-                <span className="mb-1.5 block text-xs font-medium tracking-wide text-white/90">
-                  Team Name
-                </span>
-                <input
-                  style={inputStyle}
-                  value={teamName}
-                  onChange={(e) => setTeamName(e.target.value)}
-                  placeholder="e.g. Chiromo Ghosts"
-                  required
-                  maxLength={60}
+
+            {openSlot === "A" && (
+              <div>
+                <p className="mb-3 text-xs uppercase tracking-widest text-white/45">
+                  Slot A — Team Captain
+                </p>
+                <PlayerFields
+                  value={captain}
+                  onChange={setCaptain}
+                  emailHint="School Email (preferred)"
                 />
-              </label>
-
-              <div className="mb-4 flex flex-wrap gap-1.5">
-                {(["A", "B", "C", "D", "E"] as const).map((slot) => (
-                  <button
-                    key={slot}
-                    type="button"
-                    onClick={() => setOpenSlot(slot)}
-                    className="min-w-12 rounded px-3 py-1.5 text-xs font-bold tracking-wider"
-                    style={
-                      openSlot === slot
-                        ? { backgroundColor: "#ffcf00", color: "#000" }
-                        : { backgroundColor: "#2a2a2a", color: "rgba(255,255,255,0.7)" }
-                    }
-                  >
-                    {slot === "A" ? "A · YOU" : slot}
-                  </button>
-                ))}
               </div>
+            )}
 
-              {openSlot === "A" && (
-                <div>
-                  <p className="mb-3 text-xs uppercase tracking-widest text-white/45">
-                    Slot A — Team Captain
-                  </p>
-                  <PlayerFields
-                    value={captain}
-                    onChange={setCaptain}
-                    emailHint="School Email (preferred)"
-                  />
-                </div>
-              )}
+            {(["B", "C", "D", "E"] as const).map(
+              (slot) =>
+                openSlot === slot && (
+                  <div key={slot}>
+                    <p className="mb-3 text-xs uppercase tracking-widest text-white/45">
+                      Slot {slot} — Teammate
+                    </p>
+                    <PlayerFields
+                      value={teammates[slot]}
+                      onChange={(next) =>
+                        setTeammates((t) => ({ ...t, [slot]: next }))
+                      }
+                    />
+                  </div>
+                ),
+            )}
 
-              {(["B", "C", "D", "E"] as const).map(
-                (slot) =>
-                  openSlot === slot && (
-                    <div key={slot}>
-                      <p className="mb-3 text-xs uppercase tracking-widest text-white/45">
-                        Slot {slot} — Teammate
-                      </p>
-                      <PlayerFields
-                        value={teammates[slot]}
-                        onChange={(next) =>
-                          setTeammates((t) => ({ ...t, [slot]: next }))
-                        }
-                      />
-                    </div>
-                  ),
-              )}
+            <div className="my-5 border-t border-white/10 pt-4">
+              <OperatorCarousel value={operatorId} onChange={setOperatorId} />
+            </div>
 
-              <button
-                type="submit"
-                disabled={status?.isFull}
-                className="mt-4 w-full rounded-md py-3 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50"
-                style={{ backgroundColor: "#3a3a3a" }}
-              >
-                {status?.isFull ? "Registration Closed" : "Register Squad"}
-              </button>
+            <button
+              type="submit"
+              disabled={status?.isFull}
+              className="mt-4 w-full rounded-md py-3 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50"
+              style={{ backgroundColor: "#3a3a3a" }}
+            >
+              {status?.isFull ? "Registration Closed" : "Register Squad"}
+            </button>
 
-              <p className="mt-4 text-center text-xs leading-relaxed text-white/45">
-                One registration locks slots A-E (5 operators). Max 20 squads · 100
-                operators. Form closes at the 100th slot.
-              </p>
-            </form>
-          )}
+            <p className="mt-4 text-center text-xs leading-relaxed text-white/45">
+              One registration locks slots A-E (5 operators). Max 20 squads · 100
+              operators. Form closes at the 100th slot.
+            </p>
+          </form>
         </div>
       </div>
     </>
