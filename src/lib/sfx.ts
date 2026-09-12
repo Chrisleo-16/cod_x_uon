@@ -15,7 +15,24 @@ function audio() {
   return ctx;
 }
 
-/** Short mechanical “car / selector click” when scrolling between operators */
+/** Call from a real tap so AudioContext + haptics are allowed on mobile */
+export function unlockMobileFeedback() {
+  audio();
+  // Tiny no-op pattern — some Androids only allow vibrate after a gesture
+  tryVibrate(1);
+}
+
+function tryVibrate(pattern: number | number[]): boolean {
+  if (typeof navigator === "undefined") return false;
+  if (typeof navigator.vibrate !== "function") return false;
+  try {
+    return navigator.vibrate(pattern);
+  } catch {
+    return false;
+  }
+}
+
+/** Short mechanical “selector click” when scrolling between operators */
 export function playSelectTick() {
   const ac = audio();
   if (!ac) return;
@@ -43,7 +60,6 @@ export function playSelectTick() {
   osc.start(t0);
   osc.stop(t0 + 0.1);
 
-  // soft thud layer
   const osc2 = ac.createOscillator();
   const g2 = ac.createGain();
   osc2.type = "triangle";
@@ -54,6 +70,16 @@ export function playSelectTick() {
   g2.connect(ac.destination);
   osc2.start(t0);
   osc2.stop(t0 + 0.09);
+}
+
+/** Short haptic tick for operator change (Android). iOS Safari has no Vibration API. */
+export function tickVibrate() {
+  return tryVibrate(14);
+}
+
+/** Stronger pulse when the finger lifts after scrolling operators */
+export function commitVibrate() {
+  return tryVibrate([12, 24, 18]);
 }
 
 /** Mission complete sting */
@@ -78,14 +104,12 @@ export function playMissionComplete() {
   });
 }
 
-/** Phone haptic pulse train — no-op on desktop */
+/** Phone haptic pulse train — no-op on desktop / iOS */
 export function pulseVibrate() {
-  if (typeof navigator === "undefined" || !navigator.vibrate) return;
-  // ta-ta-ta-ta
-  navigator.vibrate([30, 40, 30, 40, 30, 40, 45]);
+  tryVibrate([30, 40, 30, 40, 30, 40, 45]);
 }
 
 export function celebrateSelect() {
   playSelectTick();
-  pulseVibrate();
+  tickVibrate();
 }

@@ -3,7 +3,7 @@
 import Image from "next/image";
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { OPERATORS, type OperatorCharacter } from "@/lib/characters";
-import { celebrateSelect } from "@/lib/sfx";
+import { celebrateSelect, commitVibrate, unlockMobileFeedback } from "@/lib/sfx";
 
 type Props = {
   value: string;
@@ -32,6 +32,7 @@ function useCardSize() {
 export function OperatorCarousel({ value, onChange }: Props) {
   const scrollerRef = useRef<HTMLDivElement>(null);
   const lastId = useRef(value);
+  const gestureRef = useRef({ touching: false, changed: false });
   const [active, setActive] = useState(value || OPERATORS[0].id);
   const [edgePad, setEdgePad] = useState(80);
   const { w: CARD_W, h: CARD_H, gap: GAP } = useCardSize();
@@ -77,10 +78,28 @@ export function OperatorCarousel({ value, onChange }: Props) {
       setActive(best.id);
       onChange(best.id);
       celebrateSelect();
+      if (gestureRef.current.touching) {
+        gestureRef.current.changed = true;
+      }
     } else {
       setActive(best.id);
     }
   }, [onChange]);
+
+  const endGesture = useCallback(() => {
+    if (gestureRef.current.touching && gestureRef.current.changed) {
+      // Android often blocks vibrate mid-scroll; fire on finger-up (real user gesture)
+      commitVibrate();
+    }
+    gestureRef.current.touching = false;
+    gestureRef.current.changed = false;
+  }, []);
+
+  const startGesture = useCallback(() => {
+    gestureRef.current.touching = true;
+    gestureRef.current.changed = false;
+    unlockMobileFeedback();
+  }, []);
 
   const scrollToId = useCallback(
     (id: string, behavior: ScrollBehavior = "smooth") => {
@@ -132,6 +151,11 @@ export function OperatorCarousel({ value, onChange }: Props) {
       <div
         ref={scrollerRef}
         className="operator-track flex overflow-x-auto overflow-y-visible snap-x snap-mandatory"
+        onPointerDown={startGesture}
+        onPointerUp={endGesture}
+        onPointerCancel={endGesture}
+        onTouchStart={startGesture}
+        onTouchEnd={endGesture}
         style={{
           scrollbarWidth: "none",
           gap: GAP,
@@ -150,7 +174,10 @@ export function OperatorCarousel({ value, onChange }: Props) {
               key={op.id}
               type="button"
               data-op-id={op.id}
-              onClick={() => scrollToId(op.id, "smooth")}
+              onClick={() => {
+                unlockMobileFeedback();
+                scrollToId(op.id, "smooth");
+              }}
               className="operator-card relative shrink-0 snap-center overflow-hidden border transition-[transform,opacity,filter,box-shadow,border-color] duration-300 ease-out"
               style={{
                 width: CARD_W,
