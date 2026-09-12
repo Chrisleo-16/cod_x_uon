@@ -243,7 +243,7 @@ export function RegistrationForm() {
         onClose={() => setAttention((a) => ({ ...a, open: false }))}
       />
 
-      <div className="mx-auto w-full max-w-md px-4 py-8 sm:py-10 md:py-8">
+      <div className="mx-auto w-full max-w-md px-5 py-2 sm:py-4 md:px-5 md:py-2">
         <div className="overflow-hidden rounded-xl border border-white/10" style={{ backgroundColor: "#141414" }}>
           <div className="flex items-center justify-center px-5 pt-6">
             <Image
@@ -349,6 +349,19 @@ export function RegistrationForm() {
             <p className="mt-4 text-center text-xs leading-relaxed text-white/45">
               One registration locks slots A-E (5 operators). Max 20 squads · 100
               operators. Form closes at the 100th slot.
+            </p>
+
+            <p className="mt-5 border-t border-white/10 pt-4 text-center text-[11px] leading-relaxed text-white/40">
+              Brought to you by the Office of the Deputy Governor and Secretary
+              Corporate Affairs · Incorporated by{" "}
+              <a
+                href="https://designyako.netlify.app"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-semibold text-[#ffcf00] underline underline-offset-2 hover:text-white"
+              >
+                Design Yako
+              </a>
             </p>
           </form>
         </div>

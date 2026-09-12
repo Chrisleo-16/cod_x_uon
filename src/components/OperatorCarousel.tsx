@@ -1,9 +1,12 @@
 "use client";
 
 import Image from "next/image";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { OPERATORS, type OperatorCharacter } from "@/lib/characters";
 import { celebrateSelect } from "@/lib/sfx";
+
+const CARD_W = 112;
+const GAP = 12;
 
 type Props = {
   value: string;
@@ -14,6 +17,23 @@ export function OperatorCarousel({ value, onChange }: Props) {
   const scrollerRef = useRef<HTMLDivElement>(null);
   const lastId = useRef(value);
   const [active, setActive] = useState(value || OPERATORS[0].id);
+  const [edgePad, setEdgePad] = useState(96);
+
+  const measurePad = useCallback(() => {
+    const el = scrollerRef.current;
+    if (!el) return;
+    // Enough side space so first & last cards can sit dead-center (fully selected)
+    setEdgePad(Math.max(24, (el.clientWidth - CARD_W) / 2));
+  }, []);
+
+  useLayoutEffect(() => {
+    measurePad();
+    const el = scrollerRef.current;
+    if (!el) return;
+    const ro = new ResizeObserver(measurePad);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [measurePad]);
 
   const syncFromScroll = useCallback(() => {
     const el = scrollerRef.current;
@@ -53,17 +73,21 @@ export function OperatorCarousel({ value, onChange }: Props) {
       });
     };
     el.addEventListener("scroll", onScroll, { passive: true });
-    // center initial
+
     const idx = Math.max(
       0,
       OPERATORS.findIndex((o) => o.id === (value || OPERATORS[0].id)),
     );
-    const kid = el.querySelectorAll<HTMLElement>("[data-op-id]")[idx];
-    if (kid) {
-      el.scrollLeft = kid.offsetLeft - (el.clientWidth - kid.offsetWidth) / 2;
-    }
+    requestAnimationFrame(() => {
+      const kid = el.querySelectorAll<HTMLElement>("[data-op-id]")[idx];
+      if (kid) {
+        el.scrollLeft = kid.offsetLeft - (el.clientWidth - kid.offsetWidth) / 2;
+        syncFromScroll();
+      }
+    });
+
     return () => el.removeEventListener("scroll", onScroll);
-  }, [syncFromScroll, value]);
+  }, [syncFromScroll, value, edgePad]);
 
   function selectId(id: string) {
     const el = scrollerRef.current;
@@ -83,8 +107,13 @@ export function OperatorCarousel({ value, onChange }: Props) {
       </p>
       <div
         ref={scrollerRef}
-        className="operator-track flex gap-3 overflow-x-auto px-8 py-3 snap-x snap-mandatory"
-        style={{ scrollbarWidth: "none" }}
+        className="operator-track flex overflow-x-auto py-3 snap-x snap-mandatory"
+        style={{
+          scrollbarWidth: "none",
+          gap: GAP,
+          paddingLeft: edgePad,
+          paddingRight: edgePad,
+        }}
       >
         {OPERATORS.map((op) => {
           const selected = op.id === active;
@@ -96,7 +125,7 @@ export function OperatorCarousel({ value, onChange }: Props) {
               onClick={() => selectId(op.id)}
               className="operator-card relative shrink-0 snap-center overflow-hidden border transition-all duration-300"
               style={{
-                width: 112,
+                width: CARD_W,
                 height: 148,
                 borderRadius: 10,
                 borderColor: selected ? "#ffcf00" : "rgba(255,255,255,0.12)",
