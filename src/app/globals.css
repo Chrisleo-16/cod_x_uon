@@ -1,0 +1,218 @@
+@import "tailwindcss";
+
+:root {
+  --background: #050505;
+  --foreground: #f5f5f5;
+  --cod-yellow: #ffcf00;
+  --cod-blue: #2f6fed;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-body);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+}
+
+/* COD Mobile loader (from reference video) */
+.cod-loader-screen {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  overflow: hidden;
+  background: #050505;
+}
+
+.cod-loader-bg {
+  position: absolute;
+  inset: 0;
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
+}
+
+.cod-loader-bg-desktop {
+  display: none;
+  background-image: url("/backgrounds/ghost-desktop.png");
+}
+
+.cod-loader-bg-mobile {
+  display: block;
+  background-image: url("/backgrounds/squad-mobile.png");
+}
+
+@media (min-width: 768px) {
+  .cod-loader-bg-desktop {
+    display: block;
+  }
+  .cod-loader-bg-mobile {
+    display: none;
+  }
+}
+
+.cod-loader-veil {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(to top, rgba(0, 0, 0, 0.88) 0%, rgba(0, 0, 0, 0.35) 42%, rgba(0, 0, 0, 0.55) 100%),
+    radial-gradient(ellipse at center, transparent 30%, rgba(0, 0, 0, 0.45) 100%);
+}
+
+.cod-loader-brand {
+  position: absolute;
+  top: 1rem;
+  left: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  z-index: 2;
+  max-width: calc(100vw - 2rem);
+}
+
+.cod-loader-cod-logo {
+  height: 44px;
+  width: auto;
+  border-radius: 10px;
+  object-fit: contain;
+}
+
+.cod-loader-uon-logo {
+  height: 48px;
+  width: auto;
+  border-radius: 10px;
+  object-fit: contain;
+}
+
+.cod-loader-x {
+  color: #ffcf00;
+  font-family: var(--font-display), sans-serif;
+  font-size: 1.15rem;
+  font-weight: 700;
+  line-height: 1;
+  text-transform: lowercase;
+  text-shadow: 0 0 10px rgba(255, 207, 0, 0.45);
+}
+
+@media (min-width: 768px) {
+  .cod-loader-cod-logo {
+    height: 56px;
+  }
+  .cod-loader-uon-logo {
+    height: 60px;
+  }
+  .cod-loader-x {
+    font-size: 1.35rem;
+  }
+}
+
+.cod-loader-footer {
+  position: absolute;
+  left: 50%;
+  bottom: 11%;
+  transform: translateX(-50%);
+  width: min(72vw, 560px);
+  z-index: 2;
+  text-align: center;
+}
+
+.cod-loader-status {
+  margin: 0 0 0.55rem;
+  color: #fff;
+  font-family: var(--font-body), sans-serif;
+  font-size: 0.92rem;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.8);
+}
+
+.cod-loader-track {
+  width: 100%;
+  height: 3px;
+  background: rgba(255, 255, 255, 0.18);
+  overflow: hidden;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.08);
+}
+
+.cod-loader-fill {
+  height: 100%;
+  background: #ffcf00;
+  box-shadow:
+    0 0 10px rgba(255, 207, 0, 0.95),
+    0 0 22px rgba(255, 207, 0, 0.55);
+  transition: width 80ms linear;
+}
+
+.cod-loader-percent {
+  margin: 0.45rem 0 0;
+  color: #fff;
+  font-family: var(--font-body), sans-serif;
+  font-size: 0.85rem;
+  font-weight: 500;
+  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.8);
+}
+
+.attention-stripes {
+  opacity: 0.2;
+  background: repeating-linear-gradient(-45deg, #ffcf00 0 10px, transparent 10px 20px);
+}
+
+.cod-loader-hex-wrap {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.cod-loader-hex {
+  position: relative;
+  width: 78px;
+  height: 86px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+}
+
+.cod-loader-hex-svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.cod-loader-hex-m {
+  font-family: var(--font-display), sans-serif;
+  font-weight: 800;
+  font-size: 1.55rem;
+  color: #fff;
+  letter-spacing: 0.04em;
+}
+
+.cod-loader-hex-bar {
+  width: 4px;
+  height: 34px;
+  background: #ffcf00;
+  box-shadow: 0 0 10px rgba(255, 207, 0, 0.9);
+  animation: cod-bar-pulse 0.85s ease-in-out infinite;
+}
+
+.cod-loader-hex-status {
+  margin-top: 1rem;
+  color: #fff;
+  font-family: var(--font-body), sans-serif;
+  font-size: 0.92rem;
+  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.85);
+}
+
+@keyframes cod-bar-pulse {
+  0%, 100% { opacity: 0.45; transform: scaleY(0.72); }
+  50% { opacity: 1; transform: scaleY(1); }
+}
