@@ -8,6 +8,7 @@ export type PlayerInput = {
 };
 
 export type TeamRegistrationPayload = {
+  teamName: string;
   captain: PlayerInput;
   teammates: {
     B: PlayerInput;

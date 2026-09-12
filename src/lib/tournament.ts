@@ -103,6 +103,9 @@ function validatePlayer(p: TeamRegistrationPayload["captain"], label: string) {
 }
 
 export async function registerTeam(payload: TeamRegistrationPayload) {
+  if (!payload.teamName?.trim()) {
+    throw new Error("Team name is required");
+  }
   validatePlayer(payload.captain, "Slot A (you)");
   validatePlayer(payload.teammates.B, "Slot B");
   validatePlayer(payload.teammates.C, "Slot C");
@@ -114,6 +117,8 @@ export async function registerTeam(payload: TeamRegistrationPayload) {
     const err = new Error("REGISTRATION_FULL");
     throw err;
   }
+
+  const team_name = payload.teamName.trim();
 
   const roster = [
     { slot: "A", ...payload.captain },
@@ -129,7 +134,7 @@ export async function registerTeam(payload: TeamRegistrationPayload) {
     const team = {
       id: uuid(),
       team_number,
-      team_name: `${payload.captain.fullName.trim()}'s Squad`,
+      team_name,
       pool: poolForTeamNumber(team_number),
       created_at: new Date().toISOString(),
       players: roster.map((p) => ({
@@ -143,7 +148,12 @@ export async function registerTeam(payload: TeamRegistrationPayload) {
     };
     store.teams.push(team);
     if (store.teams.length >= MAX_TEAMS) store.registrationOpen = false;
-    return { teamNumber: team_number, pool: team.pool, teamId: team.id };
+    return {
+      teamNumber: team_number,
+      pool: team.pool,
+      teamId: team.id,
+      teamName: team_name,
+    };
   }
 
   const supabase = createServiceClient();
@@ -152,7 +162,6 @@ export async function registerTeam(payload: TeamRegistrationPayload) {
     .select("*", { count: "exact", head: true });
   const team_number = (count ?? 0) + 1;
   const pool = poolForTeamNumber(team_number);
-  const team_name = `${payload.captain.fullName.trim()}'s Squad`;
 
   const { data: team, error: teamError } = await supabase
     .from("teams")
@@ -186,7 +195,7 @@ export async function registerTeam(payload: TeamRegistrationPayload) {
       .upsert({ key: "registration_open", value: false });
   }
 
-  return { teamNumber: team_number, pool, teamId: team.id };
+  return { teamNumber: team_number, pool, teamId: team.id, teamName: team_name };
 }
 
 export async function getAdminData() {

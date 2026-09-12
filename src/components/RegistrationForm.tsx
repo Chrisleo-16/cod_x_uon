@@ -102,6 +102,7 @@ export function RegistrationForm() {
     { open: false, message: "" },
   );
   const [success, setSuccess] = useState<string | null>(null);
+  const [teamName, setTeamName] = useState("");
   const [captain, setCaptain] = useState<PlayerInput>(emptyPlayer);
   const [teammates, setTeammates] = useState({
     B: emptyPlayer(),
@@ -161,7 +162,7 @@ export function RegistrationForm() {
 
     setSubmitting(true);
     try {
-      const payload: TeamRegistrationPayload = { captain, teammates };
+      const payload: TeamRegistrationPayload = { teamName, captain, teammates };
       const res = await fetch("/api/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -180,8 +181,9 @@ export function RegistrationForm() {
       if (!res.ok) throw new Error(data.error || "Registration failed");
 
       setSuccess(
-        `Squad locked in — Team #${data.teamNumber} · Pool ${data.pool}. See you at Chiromo.`,
+        `Squad locked in — ${data.teamName || teamName} · Team #${data.teamNumber} · Pool ${data.pool}. See you at Chiromo.`,
       );
+      setTeamName("");
       setCaptain(emptyPlayer());
       setTeammates({
         B: emptyPlayer(),
@@ -256,6 +258,20 @@ export function RegistrationForm() {
             </div>
           ) : (
             <form onSubmit={onSubmit} className="px-6 py-5">
+              <label className="mb-4 block">
+                <span className="mb-1.5 block text-xs font-medium tracking-wide text-white/90">
+                  Team Name
+                </span>
+                <input
+                  style={inputStyle}
+                  value={teamName}
+                  onChange={(e) => setTeamName(e.target.value)}
+                  placeholder="e.g. Chiromo Ghosts"
+                  required
+                  maxLength={60}
+                />
+              </label>
+
               <div className="mb-4 flex flex-wrap gap-1.5">
                 {(["A", "B", "C", "D", "E"] as const).map((slot) => (
                   <button
