@@ -50,8 +50,9 @@ export default function AdminLoginPage() {
             <Image
               src="/logos/uon-onuss.png"
               alt="University of Nairobi and ONUSS"
-              width={996}
-              height={370}
+              width={1970}
+              height={720}
+              quality={100}
               className="h-14 w-auto max-w-full object-contain"
               style={{ borderRadius: 10 }}
               priority

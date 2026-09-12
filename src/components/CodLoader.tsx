@@ -57,8 +57,9 @@ export function CodLoader({ label }: Props) {
         <Image
           src="/logos/cod-mobile-logo.png"
           alt="Call of Duty Mobile"
-          width={501}
-          height={189}
+          width={986}
+          height={360}
+          quality={100}
           className="cod-loader-cod-logo"
           priority
         />
@@ -68,8 +69,9 @@ export function CodLoader({ label }: Props) {
         <Image
           src="/logos/uon-only.png"
           alt="University of Nairobi"
-          width={378}
-          height={370}
+          width={720}
+          height={720}
+          quality={100}
           className="cod-loader-uon-logo"
           priority
         />

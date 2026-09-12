@@ -12,8 +12,9 @@ export function DesktopArtPanel() {
             alt="Call of Duty Mobile"
             fill
             priority
+            quality={100}
             className="object-cover object-center"
-            sizes="50vw"
+            sizes="(max-width: 768px) 0vw, 50vw"
           />
           <div className="absolute inset-0 bg-gradient-to-r from-black/35 via-transparent to-black/20" />
 
@@ -21,8 +22,9 @@ export function DesktopArtPanel() {
             <Image
               src="/logos/cod-mobile-logo.png"
               alt="Call of Duty Mobile"
-              width={501}
-              height={189}
+              width={986}
+              height={360}
+              quality={100}
               className="h-10 w-auto object-contain lg:h-12"
               style={{ borderRadius: 10 }}
               priority
@@ -37,8 +39,9 @@ export function DesktopArtPanel() {
             <Image
               src="/logos/uon-only.png"
               alt="University of Nairobi"
-              width={378}
-              height={370}
+              width={720}
+              height={720}
+              quality={100}
               className="h-11 w-auto object-contain lg:h-12"
               style={{ borderRadius: 10 }}
               priority
