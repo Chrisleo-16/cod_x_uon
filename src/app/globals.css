@@ -16,6 +16,21 @@
 body {
   background: var(--background);
   color: var(--foreground);
+  font-family: var(--font-body), "Hitmarker", system-ui, sans-serif;
+}
+
+h1,
+h2,
+h3,
+button,
+.font-display {
+  font-family: var(--font-display), var(--font-body), "Hitmarker", system-ui, sans-serif;
+}
+
+input,
+textarea,
+select {
+  font-family: var(--font-body), "Hitmarker", system-ui, sans-serif;
 }
 
 /* COD Mobile loader (from reference video) */
@@ -37,12 +52,14 @@ body {
 
 .cod-loader-bg-desktop {
   display: none;
-  background-image: url("/backgrounds/ghost-desktop.png");
+  background-image: url("/backgrounds/cod-loader-desktop.png?v=4");
+  background-position: center top;
 }
 
 .cod-loader-bg-mobile {
   display: block;
-  background-image: url("/backgrounds/squad-mobile.png");
+  background-image: url("/backgrounds/squad-mobile.png?v=4");
+  background-position: center top;
 }
 
 @media (min-width: 768px) {
@@ -155,12 +172,17 @@ body {
   text-shadow: 0 1px 8px rgba(0, 0, 0, 0.8);
 }
 
+.operator-track {
+  touch-action: pan-x;
+}
+
 .operator-track::-webkit-scrollbar {
   display: none;
 }
 
 .operator-card {
   -webkit-tap-highlight-color: transparent;
+  transform-origin: center center;
 }
 
 .attention-stripes {

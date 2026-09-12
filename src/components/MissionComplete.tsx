@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { useEffect } from "react";
-import { OPERATORS } from "@/lib/characters";
+import { OPERATORS, POSTERS } from "@/lib/characters";
 import { playMissionComplete, pulseVibrate } from "@/lib/sfx";
 
 type Props = {
@@ -15,6 +15,9 @@ type Props = {
   captionCorner?: "top-right" | "bottom-left";
   onDone: () => void;
 };
+
+/** Clear Simon Riley poster — not an operator pick */
+const SUCCESS_BG = POSTERS.success;
 
 export function MissionComplete({
   teamName,
@@ -42,15 +45,16 @@ export function MissionComplete({
     <div className="mission-complete fixed inset-0 z-[95] overflow-hidden bg-black">
       <div className="absolute inset-0">
         <Image
-          src={op.src}
-          alt={op.name}
+          src={SUCCESS_BG}
+          alt="Mission complete"
           fill
           priority
           quality={100}
-          className="object-cover object-top md:object-contain md:bg-black"
+          unoptimized
+          className="object-cover object-[center_15%]"
           sizes="100vw"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-black/50" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/45 to-black/35" />
       </div>
 
       {/* faint WINNER watermark */}

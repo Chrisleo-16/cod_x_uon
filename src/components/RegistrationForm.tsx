@@ -244,7 +244,10 @@ export function RegistrationForm() {
       />
 
       <div className="mx-auto w-full max-w-md px-5 py-2 sm:py-4 md:px-5 md:py-2">
-        <div className="overflow-hidden rounded-xl border border-white/10" style={{ backgroundColor: "#141414" }}>
+        <div
+          className="rounded-xl border border-white/10"
+          style={{ backgroundColor: "#141414", overflow: "clip" }}
+        >
           <div className="flex items-center justify-center px-5 pt-6">
             <Image
               src="/logos/uon-onuss.png"
@@ -258,13 +261,19 @@ export function RegistrationForm() {
             />
           </div>
 
-          <h1 className="mt-5 px-6 text-center text-xl font-semibold leading-snug tracking-wide text-white" style={{ fontFamily: "var(--font-display)" }}>
+          <h1
+            className="mt-5 px-6 text-center text-xl font-bold leading-snug tracking-wide text-white"
+            style={{ fontFamily: "var(--font-display)" }}
+          >
             Register for the UoN Call of Duty Tournament
           </h1>
           <p className="mt-2 px-6 text-center text-xs tracking-wide text-white/55">
             {TOURNAMENT.date} · {TOURNAMENT.venue}
           </p>
-          <p className="mt-1 px-6 text-center text-xs uppercase tracking-widest" style={{ color: "#ffcf00" }}>
+          <p
+            className="mt-1 px-6 text-center text-xs font-bold uppercase tracking-widest"
+            style={{ color: "#ffcf00", fontFamily: "var(--font-display)" }}
+          >
             {slotsLabel}
           </p>
 
@@ -340,8 +349,8 @@ export function RegistrationForm() {
             <button
               type="submit"
               disabled={status?.isFull}
-              className="mt-4 w-full rounded-md py-3 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50"
-              style={{ backgroundColor: "#3a3a3a" }}
+              className="mt-4 w-full rounded-md py-3 text-sm font-bold tracking-wider text-white disabled:cursor-not-allowed disabled:opacity-50"
+              style={{ backgroundColor: "#3a3a3a", fontFamily: "var(--font-display)" }}
             >
               {status?.isFull ? "Registration Closed" : "Register Squad"}
             </button>

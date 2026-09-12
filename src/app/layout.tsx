@@ -1,17 +1,63 @@
-import { Oswald, Rajdhani } from "next/font/google";
+import localFont from "next/font/local";
 import type { Metadata } from "next";
 import "./globals.css";
 
-const display = Oswald({
-  subsets: ["latin"],
-  variable: "--font-display",
-  weight: ["400", "500", "600", "700"],
+/** COD Hitmarker Text — UI / body / forms */
+const hitmarkerText = localFont({
+  src: [
+    {
+      path: "../fonts/hitmarker/HitmarkerText-Regular.woff2",
+      weight: "400",
+      style: "normal",
+    },
+    {
+      path: "../fonts/hitmarker/HitmarkerText-Medium.woff2",
+      weight: "500",
+      style: "normal",
+    },
+    {
+      path: "../fonts/hitmarker/HitmarkerText-Bold.woff2",
+      weight: "700",
+      style: "normal",
+    },
+    {
+      path: "../fonts/hitmarker/HitmarkerText-Italic.woff2",
+      weight: "400",
+      style: "italic",
+    },
+  ],
+  variable: "--font-body",
+  display: "swap",
+  fallback: ["Segoe UI", "system-ui", "sans-serif"],
 });
 
-const body = Rajdhani({
-  subsets: ["latin"],
-  variable: "--font-body",
-  weight: ["400", "500", "600", "700"],
+/** COD Hitmarker Condensed — titles / game chrome */
+const hitmarkerDisplay = localFont({
+  src: [
+    {
+      path: "../fonts/hitmarker/HitmarkerCondensed-Regular.woff2",
+      weight: "400",
+      style: "normal",
+    },
+    {
+      path: "../fonts/hitmarker/HitmarkerCondensed-Medium.woff2",
+      weight: "500",
+      style: "normal",
+    },
+    {
+      path: "../fonts/hitmarker/HitmarkerCondensed-Bold.woff2",
+      weight: "700",
+      style: "normal",
+    },
+    {
+      path: "../fonts/hitmarker/HitmarkerCondensed-Black.woff2",
+      weight: "900",
+      style: "normal",
+    },
+  ],
+  variable: "--font-display",
+  display: "swap",
+  fallback: ["Segoe UI", "system-ui", "sans-serif"],
 });
 
 export const metadata: Metadata = {
@@ -38,8 +84,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${display.variable} ${body.variable} h-full`}>
-      <body className="min-h-full font-[family-name:var(--font-body)] antialiased">
+    <html
+      lang="en"
+      className={`${hitmarkerText.variable} ${hitmarkerDisplay.variable} h-full`}
+    >
+      <body className={`${hitmarkerText.className} min-h-full antialiased`}>
         {children}
       </body>
     </html>

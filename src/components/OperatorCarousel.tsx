@@ -5,26 +5,43 @@ import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react
 import { OPERATORS, type OperatorCharacter } from "@/lib/characters";
 import { celebrateSelect } from "@/lib/sfx";
 
-const CARD_W = 112;
-const GAP = 12;
-
 type Props = {
   value: string;
   onChange: (id: string) => void;
 };
 
+function useCardSize() {
+  const [size, setSize] = useState({ w: 128, h: 168, gap: 14 });
+  useLayoutEffect(() => {
+    const update = () => {
+      const mobile = window.matchMedia("(max-width: 639px)").matches;
+      // Mobile: larger, fuller portrait. Desktop form column: still readable + centerable.
+      setSize(
+        mobile
+          ? { w: 148, h: 196, gap: 16 }
+          : { w: 124, h: 164, gap: 14 },
+      );
+    };
+    update();
+    window.addEventListener("resize", update);
+    return () => window.removeEventListener("resize", update);
+  }, []);
+  return size;
+}
+
 export function OperatorCarousel({ value, onChange }: Props) {
   const scrollerRef = useRef<HTMLDivElement>(null);
   const lastId = useRef(value);
   const [active, setActive] = useState(value || OPERATORS[0].id);
-  const [edgePad, setEdgePad] = useState(96);
+  const [edgePad, setEdgePad] = useState(80);
+  const { w: CARD_W, h: CARD_H, gap: GAP } = useCardSize();
 
   const measurePad = useCallback(() => {
     const el = scrollerRef.current;
     if (!el) return;
-    // Enough side space so first & last cards can sit dead-center (fully selected)
-    setEdgePad(Math.max(24, (el.clientWidth - CARD_W) / 2));
-  }, []);
+    // Side padding so first/last can sit fully centered in the viewport
+    setEdgePad(Math.max(16, Math.round((el.clientWidth - CARD_W) / 2)));
+  }, [CARD_W]);
 
   useLayoutEffect(() => {
     measurePad();
@@ -35,6 +52,12 @@ export function OperatorCarousel({ value, onChange }: Props) {
     return () => ro.disconnect();
   }, [measurePad]);
 
+  const centerOf = (el: HTMLElement, kid: HTMLElement) => {
+    const er = el.getBoundingClientRect();
+    const kr = kid.getBoundingClientRect();
+    return el.scrollLeft + (kr.left - er.left) + kr.width / 2;
+  };
+
   const syncFromScroll = useCallback(() => {
     const el = scrollerRef.current;
     if (!el) return;
@@ -43,8 +66,7 @@ export function OperatorCarousel({ value, onChange }: Props) {
     let bestDist = Infinity;
     const kids = Array.from(el.querySelectorAll<HTMLElement>("[data-op-id]"));
     for (const kid of kids) {
-      const center = kid.offsetLeft + kid.offsetWidth / 2;
-      const dist = Math.abs(center - mid);
+      const dist = Math.abs(centerOf(el, kid) - mid);
       if (dist < bestDist) {
         bestDist = dist;
         best = OPERATORS.find((o) => o.id === kid.dataset.opId) || best;
@@ -60,6 +82,21 @@ export function OperatorCarousel({ value, onChange }: Props) {
     }
   }, [onChange]);
 
+  const scrollToId = useCallback(
+    (id: string, behavior: ScrollBehavior = "smooth") => {
+      const el = scrollerRef.current;
+      if (!el) return;
+      const kid = el.querySelector<HTMLElement>(`[data-op-id="${id}"]`);
+      if (!kid) return;
+      const er = el.getBoundingClientRect();
+      const kr = kid.getBoundingClientRect();
+      const kidCenter = el.scrollLeft + (kr.left - er.left) + kr.width / 2;
+      const target = kidCenter - el.clientWidth / 2;
+      el.scrollTo({ left: Math.max(0, target), behavior });
+    },
+    [],
+  );
+
   useEffect(() => {
     const el = scrollerRef.current;
     if (!el) return;
@@ -73,46 +110,37 @@ export function OperatorCarousel({ value, onChange }: Props) {
       });
     };
     el.addEventListener("scroll", onScroll, { passive: true });
-
-    const idx = Math.max(
-      0,
-      OPERATORS.findIndex((o) => o.id === (value || OPERATORS[0].id)),
-    );
-    requestAnimationFrame(() => {
-      const kid = el.querySelectorAll<HTMLElement>("[data-op-id]")[idx];
-      if (kid) {
-        el.scrollLeft = kid.offsetLeft - (el.clientWidth - kid.offsetWidth) / 2;
-        syncFromScroll();
-      }
-    });
-
     return () => el.removeEventListener("scroll", onScroll);
-  }, [syncFromScroll, value, edgePad]);
+  }, [syncFromScroll]);
 
-  function selectId(id: string) {
-    const el = scrollerRef.current;
-    if (!el) return;
-    const kid = el.querySelector<HTMLElement>(`[data-op-id="${id}"]`);
-    if (!kid) return;
-    el.scrollTo({
-      left: kid.offsetLeft - (el.clientWidth - kid.offsetWidth) / 2,
-      behavior: "smooth",
-    });
-  }
+  // Center active card when layout/padding is ready (not on every parent value echo)
+  useEffect(() => {
+    const id = value || OPERATORS[0].id;
+    const t = window.setTimeout(() => {
+      scrollToId(id, "auto");
+      syncFromScroll();
+    }, 50);
+    return () => window.clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- only re-center on layout size changes
+  }, [edgePad, CARD_W, scrollToId, syncFromScroll]);
 
   return (
-    <div className="operator-carousel">
+    <div className="operator-carousel relative z-10">
       <p className="mb-2 text-[11px] uppercase tracking-[0.2em] text-white/45">
         Choose operator · scroll sideways
       </p>
       <div
         ref={scrollerRef}
-        className="operator-track flex overflow-x-auto py-3 snap-x snap-mandatory"
+        className="operator-track flex overflow-x-auto overflow-y-visible snap-x snap-mandatory"
         style={{
           scrollbarWidth: "none",
           gap: GAP,
+          // Extra vertical room so the center card + glow aren’t clipped
+          paddingTop: 18,
+          paddingBottom: 18,
           paddingLeft: edgePad,
           paddingRight: edgePad,
+          WebkitOverflowScrolling: "touch",
         }}
       >
         {OPERATORS.map((op) => {
@@ -122,18 +150,22 @@ export function OperatorCarousel({ value, onChange }: Props) {
               key={op.id}
               type="button"
               data-op-id={op.id}
-              onClick={() => selectId(op.id)}
-              className="operator-card relative shrink-0 snap-center overflow-hidden border transition-all duration-300"
+              onClick={() => scrollToId(op.id, "smooth")}
+              className="operator-card relative shrink-0 snap-center overflow-hidden border transition-[transform,opacity,filter,box-shadow,border-color] duration-300 ease-out"
               style={{
                 width: CARD_W,
-                height: 148,
+                height: CARD_H,
                 borderRadius: 10,
-                borderColor: selected ? "#ffcf00" : "rgba(255,255,255,0.12)",
-                opacity: selected ? 1 : 0.35,
-                transform: selected ? "scale(1.08)" : "scale(0.92)",
-                filter: selected ? "none" : "grayscale(0.55) brightness(0.7)",
-                boxShadow: selected ? "0 0 18px rgba(255,207,0,0.35)" : "none",
+                borderWidth: selected ? 2 : 1,
+                borderColor: selected ? "#ffcf00" : "rgba(255,255,255,0.14)",
+                opacity: selected ? 1 : 0.4,
+                transform: selected ? "scale(1.06)" : "scale(0.88)",
+                filter: selected ? "none" : "grayscale(0.5) brightness(0.65)",
+                boxShadow: selected
+                  ? "0 0 0 1px rgba(255,207,0,0.35), 0 0 24px rgba(255,207,0,0.45)"
+                  : "none",
                 background: "#0d0d0d",
+                zIndex: selected ? 2 : 1,
               }}
               aria-pressed={selected}
               aria-label={op.name}
@@ -142,15 +174,17 @@ export function OperatorCarousel({ value, onChange }: Props) {
                 src={op.src}
                 alt={op.name}
                 fill
-                quality={90}
-                className="object-cover object-top"
-                sizes="112px"
+                quality={95}
+                className="object-cover object-[center_15%]"
+                sizes="(max-width: 639px) 158px, 134px"
+                priority={selected}
               />
               <span
-                className="absolute inset-x-0 bottom-0 px-1 py-1 text-center text-[10px] font-semibold tracking-wide"
+                className="absolute inset-x-0 bottom-0 px-1.5 py-1.5 text-center text-[10px] font-semibold tracking-wide sm:text-[11px]"
                 style={{
-                  background: "linear-gradient(transparent, rgba(0,0,0,0.85))",
+                  background: "linear-gradient(transparent, rgba(0,0,0,0.9))",
                   color: selected ? "#ffcf00" : "rgba(255,255,255,0.75)",
+                  fontFamily: "var(--font-display), var(--font-body), sans-serif",
                 }}
               >
                 {op.name}

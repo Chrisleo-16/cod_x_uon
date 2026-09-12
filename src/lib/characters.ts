@@ -5,6 +5,14 @@ export type OperatorCharacter = {
   accent?: "portrait" | "full";
 };
 
+/** Fixed posters — side / loader / success only (not selectable operators) */
+export const POSTERS = {
+  side: "/backgrounds/side-eternal-ghost-duo.png",
+  loaderDesktop: "/backgrounds/cod-loader-desktop.png",
+  loaderMobile: "/backgrounds/squad-mobile.png",
+  success: "/backgrounds/ghost-desktop.png",
+} as const;
+
 /** Selectable operators for squad registration */
 export const OPERATORS: OperatorCharacter[] = [
   { id: "ghost-mist", name: "Ghost", src: "/characters/ghost-mist.png", accent: "full" },

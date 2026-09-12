@@ -8,15 +8,16 @@ export function DesktopArtPanel() {
       <div className="absolute inset-3 overflow-hidden" style={{ borderRadius: 10 }}>
         <div className="relative h-full w-full">
           <Image
-            src="/backgrounds/cod-desktop-left.png"
-            alt="Call of Duty Mobile"
+            src="/backgrounds/side-eternal-ghost-duo.png"
+            alt="Eternal Ghost"
             fill
             priority
             quality={100}
-            className="object-cover object-center"
+            unoptimized
+            className="object-cover object-[center_20%]"
             sizes="(max-width: 768px) 0vw, 50vw"
           />
-          <div className="absolute inset-0 bg-gradient-to-r from-black/35 via-transparent to-black/20" />
+          <div className="absolute inset-0 bg-gradient-to-r from-black/25 via-transparent to-black/30" />
 
           <div className="absolute left-4 top-4 z-10 flex items-center gap-2">
             <Image
@@ -58,7 +59,7 @@ export function SceneBackground() {
     <div className="pointer-events-none fixed inset-0 -z-10 overflow-hidden md:hidden">
       <div
         className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-        style={{ backgroundImage: "url(/backgrounds/squad-mobile.png)" }}
+        style={{ backgroundImage: "url(/backgrounds/squad-mobile.png?v=4)" }}
       />
       <div className="absolute inset-0 bg-gradient-to-b from-black/75 via-black/55 to-black/85" />
     </div>
